@@ -983,6 +983,8 @@ public class DbSqlSession implements Session {
       String ddlStatements = new String(bytes);
       BufferedReader reader = new BufferedReader(new StringReader(ddlStatements));
       String line = readNextTrimmedLine(reader);
+      Boolean procedureStart = false;
+      Boolean procedureEnd = false;
       while (line != null) {
         if (line.startsWith("# ")) {
           log.debug(line.substring(2));
@@ -1006,8 +1008,10 @@ public class DbSqlSession implements Session {
           }
           
         } else if (line.length()>0) {
-          
-          if (line.endsWith(";")) {
+          String[] lines = line.split("\\s+");
+          procedureStart = procedureStart || isProcedureStart(lines);
+          procedureEnd   = procedureEnd   || isProcedureEnd(lines);
+          if ((!procedureStart && line.endsWith(";")) || (procedureStart && procedureEnd)) {
             sqlStatement = addSqlStatementPiece(sqlStatement, line.substring(0, line.length()-1));
             Statement jdbcStatement = connection.createStatement();
             try {
@@ -1027,6 +1031,10 @@ public class DbSqlSession implements Session {
           } else {
             sqlStatement = addSqlStatementPiece(sqlStatement, line);
           }
+          if (procedureEnd) {
+            procedureStart = false;
+            procedureEnd   = false;
+          }
         }
         
         line = readNextTrimmedLine(reader);
@@ -1041,6 +1049,14 @@ public class DbSqlSession implements Session {
     } catch (Exception e) {
       throw new ActivitiException("couldn't "+operation+" db schema: "+exceptionSqlStatement, e);
     }
+  }
+
+  private Boolean isProcedureStart(String[] lines) {
+    return lines[0].equalsIgnoreCase("CREATE") && lines[1].equalsIgnoreCase("PROCEDURE");
+  }
+
+  private Boolean isProcedureEnd(String[] lines) {
+    return lines[0].equalsIgnoreCase("END") && lines[1].equalsIgnoreCase("PROCEDURE");
   }
 
   protected String addSqlStatementPiece(String sqlStatement, String line) {
