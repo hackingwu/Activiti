@@ -48,7 +48,7 @@ public class DbSqlSessionFactory implements SessionFactory {
     databaseSpecificLimitBetweenStatements.put("sinodb", "");
     databaseOuterJoinLimitBetweenStatements.put("sinodb", "");
     databaseSpecificOrderByStatements.put("sinodb", defaultOrderBy);
-    addDatabaseSpecificStatement("sinodb", "selectExclusiveJobsToExecute", "selectNextJobsToExecute_sinodb");
+    addDatabaseSpecificStatement("sinodb", "selectExclusiveJobsToExecute", "selectExclusiveJobsToExecute_sinodb");
     // h2
     databaseSpecificLimitBeforeStatements.put("h2", "");
     databaseSpecificLimitAfterStatements.put("h2", "LIMIT #{maxResults} OFFSET #{firstResult}");
