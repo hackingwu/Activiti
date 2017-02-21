@@ -202,6 +202,7 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.apache.ibatis.transaction.managed.ManagedTransactionFactory;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.StringTypeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -555,6 +556,8 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
     databaseTypeMappings.setProperty("Oracle","oracle");
     databaseTypeMappings.setProperty("PostgreSQL","postgres");
     databaseTypeMappings.setProperty("Microsoft SQL Server","mssql");
+    databaseTypeMappings.setProperty("Sinoregal Dynamic Server", "sinodb");
+    databaseTypeMappings.setProperty("SinoDB Dynamic Server", "sinodb");
     databaseTypeMappings.setProperty("DB2","db2");
     databaseTypeMappings.setProperty("DB2","db2");
     databaseTypeMappings.setProperty("DB2/NT","db2");
@@ -638,6 +641,10 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
         Configuration configuration = parser.getConfiguration();
         configuration.setEnvironment(environment);
         configuration.getTypeHandlerRegistry().register(VariableType.class, JdbcType.VARCHAR, new IbatisVariableTypeHandler());
+        if (databaseType.equals("sinodb")) {
+          StringTypeHandler stringTypeHandler = new StringTypeHandler();
+          configuration.getTypeHandlerRegistry().register(String.class, JdbcType.LONGVARCHAR, stringTypeHandler);
+        }
         configuration = parser.parse();
 
         sqlSessionFactory = new DefaultSqlSessionFactory(configuration);
